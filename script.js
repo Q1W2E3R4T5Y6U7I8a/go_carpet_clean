@@ -61,3 +61,70 @@ document.addEventListener('DOMContentLoaded', function() {
         timeEnd.value = '17:00';
     }
 });
+
+////////////////////////////////////////////////
+document.addEventListener('DOMContentLoaded', function() {
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navMenu = document.querySelector('.nav-menu');
+    
+    menuToggle.addEventListener('click', function() {
+      this.classList.toggle('active');
+      navMenu.classList.toggle('active');
+    });
+    
+    // Close menu when clicking on a link (for mobile)
+    document.querySelectorAll('.nav-menu a').forEach(link => {
+      link.addEventListener('click', function() {
+        menuToggle.classList.remove('active');
+        navMenu.classList.remove('active');
+      });
+    });
+  });
+
+////////////////////////////////////////////////
+const form = document.getElementById('contact-form');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const originalText = submitBtn.textContent;
+  
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Sending...';
+
+  try {
+    // Use MODE parameter to bypass CORS in development
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycby1JFmkeVLF3eicJSL7fmi8RHKEIjzcx_0UClPj1Ky_KWPnyg6rOumxmjcOmxJe_uwu/exec' + '?mode=cors';
+    
+    const response = await fetch(scriptUrl, {
+      method: 'POST',
+      body: JSON.stringify({
+        name: form.name.value,
+        email: form.email.value,
+        phone: form.phone.value
+      }),
+      headers: { 
+        'Content-Type': 'application/json'
+      },
+      mode: 'cors'
+    });
+
+    if (!response.ok) throw new Error('Network response was not ok');
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      alert('Submission successful!');
+      form.reset();
+    } else {
+      throw new Error(result.error || 'Unknown error');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Error: ' + error.message);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalText;
+  }
+});
